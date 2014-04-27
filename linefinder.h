@@ -76,7 +76,7 @@ class LineFinder {
 	  }
 
 	  // Draw the detected lines on an image
-	  void drawDetectedLines(cv::Mat &image, cv::Scalar color=cv::Scalar(255)) {
+	  void drawDetectedLines(cv::Mat &image, cv::Scalar color=cv::Scalar(0)) {
 		
 		  // Draw the lines
 		  std::vector<cv::Vec4i>::const_iterator it2= lines.begin();
@@ -87,7 +87,7 @@ class LineFinder {
 			  cv::Point pt2((*it2)[2],(*it2)[3]+shift);
 
 			  cv::line( image, pt1, pt2, color, 6 );
-		std::cout << " HoughP line: ("<< pt1 <<"," << pt2 << ")\n"; 
+		//std::cout << " HoughP line: ("<< pt1 <<"," << pt2 << ")\n"; 
 			  ++it2;	
 		  }
 	  }

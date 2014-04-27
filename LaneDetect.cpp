@@ -29,18 +29,20 @@
 using namespace std;
 using namespace cv;
 
-    void help(char** argv) {
+void help(char** argv) {
         cout << "This program aim to detect the Road Lane\n"
             "Usage:\n./" << argv[0] << " <video device number>\n"
             << "q,Q,esc -- quit\n"
-            << "space   -- save frame\n\n"
+            << "space   -- pause\n"
+            << "enter   -- save frame\n\n"
             << "To find the video device number, try ls /dev/video* \n"
             << "You may also pass a video file, like my_vide.avi instead of a device number"
             << endl;
-    }
+}
 
 int main(int argc, char** argv) {
 
+//**************************************** 标准化输入输出(前奏) *************************************************//
     if (argc != 2) {
         help(argv);
         return -1;
@@ -59,21 +61,35 @@ int main(int argc, char** argv) {
     int n = 0 ; //image NO
     char filename[200];
     string window_name = "Lane Detection";
-    cout << "press space to save a picture. q or esc to quit" << endl;
+    cout << "press enter to save a picture. q or esc to quit" << endl;
     namedWindow(window_name, CV_WINDOW_AUTOSIZE); //resizable window;
+    
     Mat frame;
+    double dWidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
+    double dHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+    cout << "Frame Size = " << dWidth << "x" << dHeight << endl;
+
+    Size frameSize(static_cast<int>(dWidth), static_cast<int>(dHeight));
+    //initialize the VideoWriter object 
+    //VideoWriter oVideoWriter("LaneDetection.avi", CV_FOURCC('P','I','M','1'), 20, frameSize, true); 
+
+    // BIG While !!
     while(1){
         capture >> frame;
         if (frame.empty())
             break;
         imshow(window_name, frame);
-        char key = (char)waitKey(10); //delay N millis, usually long enough to display and capture input
+        //delay N millis, usually long enough to display and capture input
+        char key = (char)waitKey(1); 
         switch (key) {
 		    case 'q':
 		    case 'Q':
 		    case 27: //escape key
 		        return 0;
-		    case ' ': //Save an image
+            case 32://space key : Pause
+                while(waitKey(0) != 32);
+                break;
+		    case 13: //Enter key : Save an image
 		        sprintf(filename,"filename%.3d.jpg",n++);
 		        imwrite(filename,frame);
 		        cout << "Saved " << filename << endl;
@@ -81,7 +97,37 @@ int main(int argc, char** argv) {
 		    default:
 		        break;
         }
-        // main function
+//*************************************** 主功能程序从此开始 *******************************************//
+        Mat gray;
+        cvtColor(frame,gray,CV_RGB2GRAY);
+        // set the ROI for the frame
+        Rect roi(0,frame.rows*0.65,frame.cols,frame.rows*0.35);
+        Mat imgROI = frame(roi);
+        namedWindow("ROI Image");
+        imshow("ROI Image",imgROI);
+
+        Mat contours;
+        Canny(imgROI,contours,50,250);
+        Mat contoursInv;
+        threshold(contours,contoursInv,128,255,THRESH_BINARY_INV);
+        namedWindow("Contours");
+        imshow("Contours",contoursInv);
+
+        // Create LineFinder instance
+        LineFinder ld;
+
+        // Set probabilistic Hough parameters
+        ld.setLineLengthAndGap(60,40);
+        ld.setMinVote(120);
+        ld.setShift(0);
+
+        // Detect lines
+        Mat houghP(imgROI.size(),CV_8U,Scalar(255));
+        std::vector<cv::Vec4i> li= ld.findLines(contours);
+        ld.drawDetectedLines(houghP);
+        cv::namedWindow("Detected Lines with HoughP");
+        cv::imshow("Detected Lines with HoughP",houghP);
+
     }
     return 0;
 }
