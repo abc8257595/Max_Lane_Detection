@@ -66,13 +66,29 @@ class LineFinder {
 		  shift = imgShift;
 	  }
 
-	  // Apply probabilistic Hough Transform
+	  // Apply probabilistic Hough Transform And filter lines by limted theta
 	  std::vector<cv::Vec4i> findLines(cv::Mat& binary) {
 
-		  lines.clear();
-		  cv::HoughLinesP(binary,lines,deltaRho,deltaTheta,minVote, minLength, maxGap);
+	  		lines.clear();
+		    cv::HoughLinesP(binary,lines,deltaRho,deltaTheta,minVote, minLength, maxGap);
 
-		  return lines;
+	  		std::vector<cv::Vec4i>::const_iterator it = lines.begin();
+	  		std::vector<cv::Vec4i> filter_lines;
+
+	  		while (it!=lines.end()) {
+		
+			  cv::Point pt1((*it)[0],(*it)[1]+shift); 
+			  cv::Point pt2((*it)[2],(*it)[3]+shift);
+			  double k = fabs(static_cast<double>(pt2.x-pt1.x)/static_cast<double>(pt1.y-pt2.y));
+			  if(k>0.176 && k<7.00)
+			  	filter_lines.push_back(*it);
+			  ++it;
+			}
+
+			lines.clear();
+			lines = filter_lines;
+
+			return lines;
 	  }
 
 	  // Draw the detected lines on an image
@@ -86,7 +102,7 @@ class LineFinder {
 			  cv::Point pt1((*it2)[0],(*it2)[1]+shift);        
 			  cv::Point pt2((*it2)[2],(*it2)[3]+shift);
 
-			  cv::line( image, pt1, pt2, color, 6 );
+			  cv::line( image, pt1, pt2, color, 1 );
 		//std::cout << " HoughP line: ("<< pt1 <<"," << pt2 << ")\n"; 
 			  ++it2;	
 		  }

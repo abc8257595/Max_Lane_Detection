@@ -98,16 +98,19 @@ int main(int argc, char** argv) {
 		        break;
         }
 //*************************************** 主功能程序从此开始 *******************************************//
-        Mat gray;
-        cvtColor(frame,gray,CV_RGB2GRAY);
-        // set the ROI for the frame
+        // set the ROI for the frame and convert color to GRAY (Save time)
         Rect roi(0,frame.rows*0.65,frame.cols,frame.rows*0.35);
         Mat imgROI = frame(roi);
+        cvtColor(imgROI,imgROI,CV_RGB2GRAY);
+        //Mat ROI_gray;
+        //Mat laneMask;
+        //threshold(imgROI,laneMask,150,255,THRESH_BINARY);
+        //bitwise_and(imgROI,laneMask,imgROI);
         namedWindow("ROI Image");
         imshow("ROI Image",imgROI);
 
         Mat contours;
-        Canny(imgROI,contours,50,250);
+        Canny(imgROI,contours,100,200);
         Mat contoursInv;
         threshold(contours,contoursInv,128,255,THRESH_BINARY_INV);
         namedWindow("Contours");
@@ -117,7 +120,7 @@ int main(int argc, char** argv) {
         LineFinder ld;
 
         // Set probabilistic Hough parameters
-        ld.setLineLengthAndGap(60,40);
+        ld.setLineLengthAndGap(40,20);
         ld.setMinVote(120);
         ld.setShift(0);
 
