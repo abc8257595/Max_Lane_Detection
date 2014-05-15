@@ -106,30 +106,38 @@ int main(int argc, char** argv) {
         //Mat laneMask;
         //threshold(imgROI,laneMask,150,255,THRESH_BINARY);
         //bitwise_and(imgROI,laneMask,imgROI);
-        namedWindow("ROI Image");
         imshow("ROI Image",imgROI);
+
+        Mat PyrDown;
+        pyrDown(imgROI,imgROI);
+        //pyrDown(imgROI,imgROI);
+        //imshow("PyrDown Image",PyrDown);
+
+        //equalizeHist( imgROI, imgROI );
+        //imshow("equalizeHist",imgROI);
 
         Mat contours;
         Canny(imgROI,contours,100,200);
         Mat contoursInv;
         threshold(contours,contoursInv,128,255,THRESH_BINARY_INV);
-        namedWindow("Contours");
         imshow("Contours",contoursInv);
 
         // Create LineFinder instance
         LineFinder ld;
 
         // Set probabilistic Hough parameters
-        ld.setLineLengthAndGap(40,20);
-        ld.setMinVote(120);
-        ld.setShift(0);
+        ld.setLineLengthAndGap(0.4*contours.rows,0.1*contours.rows);
+        ld.setMinVote(20);
+        ld.setShift(3);
 
         // Detect lines
-        Mat houghP(imgROI.size(),CV_8U,Scalar(255));
+        Mat houghP(imgROI.rows*2,imgROI.cols*2,CV_8U,Scalar(255));
         std::vector<cv::Vec4i> li= ld.findLines(contours);
         ld.drawDetectedLines(houghP);
-        cv::namedWindow("Detected Lines with HoughP");
-        cv::imshow("Detected Lines with HoughP",houghP);
+        imshow("Detected Lines with HoughP",houghP);
+
+        //pyrUp(houghP,houghP);
+        //imshow("Lane",houghP);
 
     }
     return 0;
