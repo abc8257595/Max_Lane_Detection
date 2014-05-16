@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         capture >> frame;
         if (frame.empty())
             break;
-        imshow(window_name, frame);
+        //imshow(window_name, frame);
         //delay N millis, usually long enough to display and capture input
         char key = (char)waitKey(1); 
         switch (key) {
@@ -99,9 +99,10 @@ int main(int argc, char** argv) {
         }
 //*************************************** 主功能程序从此开始 *******************************************//
         // set the ROI for the frame and convert color to GRAY (Save time)
-        Rect roi(0,frame.rows*0.65,frame.cols,frame.rows*0.35);
-        Mat imgROI = frame(roi);
-        cvtColor(imgROI,imgROI,CV_RGB2GRAY);
+        Rect roi(0,frame.rows*0.65,frame.cols,frame.rows*0.35 + 1);
+        Mat imgROI_color = frame(roi);
+        Mat imgROI;
+        cvtColor(imgROI_color,imgROI,CV_RGB2GRAY);
         //Mat ROI_gray;
         //Mat laneMask;
         //threshold(imgROI,laneMask,150,255,THRESH_BINARY);
@@ -128,17 +129,19 @@ int main(int argc, char** argv) {
         // Set probabilistic Hough parameters
         ld.setLineLengthAndGap(0.4*contours.rows,0.1*contours.rows);
         ld.setMinVote(20);
-        ld.setShift(3);
+        ld.setShift(5);
 
         // Detect lines
-        Mat houghP(imgROI.rows*2,imgROI.cols*2,CV_8U,Scalar(255));
+        Mat houghP(imgROI.rows*2,imgROI.cols*2,CV_8UC3,cv::Scalar(0,0,0));
         std::vector<cv::Vec4i> li= ld.findLines(contours);
-        ld.drawDetectedLines(houghP);
+        ld.drawDetectedLines(houghP,cv::Scalar(0,0,255));
         imshow("Detected Lines with HoughP",houghP);
 
-        //pyrUp(houghP,houghP);
-        //imshow("Lane",houghP);
-
+        //set drawing line's thickness and display on the real-time frame
+        ld.setThick(5);
+        cv::addWeighted(imgROI_color,0.7,houghP,1.0,0.,imgROI_color);
+        imshow(window_name, frame);
+        
     }
     return 0;
 }
