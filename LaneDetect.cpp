@@ -17,11 +17,14 @@
 \*------------------------------------------------------------------------------------------*/
 
 #include <highgui/highgui.hpp>
+#include <core/core.hpp>
 #include <imgproc/imgproc.hpp>
+#include <objdetect/objdetect.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <vector>
 #include "linefinder.h"
+
 
 #define uchar unsigned char
 
@@ -67,7 +70,6 @@ int main(int argc, char** argv) {
     double dWidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
     double dHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
     double dFps = capture.get(CV_CAP_PROP_FPS);
-    double ms_fps = 1000 / dFps; //计算每帧播放的时间
     cout << "Frame Size = " << dWidth << "x" << dHeight << endl;
     cout << "FPS :" << dFps << endl;
 
@@ -137,7 +139,7 @@ int main(int argc, char** argv) {
         ld.drawDetectedLines(houghP,cv::Scalar(0,0,255));
         imshow("Detected Lines with HoughP",houghP);
 
-        // et drawing line's thickness and display on the real-time frame
+        // set drawing line's thickness and display on the real-time frame
         ld.setThick(5);
         cv::addWeighted(imgROI_color,0.7,houghP,1.0,0.,imgROI_color);
         imshow(window_name, frame);

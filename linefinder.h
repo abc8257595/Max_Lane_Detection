@@ -1,8 +1,6 @@
 #if !defined LINEF
 #define LINEF
 
-#include <core/core.hpp>
-#include <imgproc/imgproc.hpp>
 #define PI 3.1415926
 
 class LineFinder {
