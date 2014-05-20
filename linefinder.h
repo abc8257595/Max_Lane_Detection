@@ -3,7 +3,6 @@
 
 #include <core/core.hpp>
 #include <imgproc/imgproc.hpp>
-
 #define PI 3.1415926
 
 class LineFinder {

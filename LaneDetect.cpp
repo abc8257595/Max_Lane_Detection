@@ -17,14 +17,13 @@
 \*------------------------------------------------------------------------------------------*/
 
 #include <highgui/highgui.hpp>
-#include <objdetect/objdetect.hpp>
 #include <imgproc/imgproc.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <vector>
 #include "linefinder.h"
 
-#define PI 3.1415926
+#define uchar unsigned char
 
 using namespace std;
 using namespace cv;
@@ -67,7 +66,10 @@ int main(int argc, char** argv) {
     Mat frame;
     double dWidth = capture.get(CV_CAP_PROP_FRAME_WIDTH);
     double dHeight = capture.get(CV_CAP_PROP_FRAME_HEIGHT);
+    double dFps = capture.get(CV_CAP_PROP_FPS);
+    double ms_fps = 1000 / dFps; //计算每帧播放的时间
     cout << "Frame Size = " << dWidth << "x" << dHeight << endl;
+    cout << "FPS :" << dFps << endl;
 
     Size frameSize(static_cast<int>(dWidth), static_cast<int>(dHeight));
     //initialize the VideoWriter object 
@@ -98,27 +100,25 @@ int main(int argc, char** argv) {
 		        break;
         }
 //*************************************** 主功能程序从此开始 *******************************************//
-        // set the ROI for the frame and convert color to GRAY (Save time)
+        // set the ROI for the frame and convert color to GRAY (Save time)  +1: match the houghP
         Rect roi(0,frame.rows*0.65,frame.cols,frame.rows*0.35 + 1);
         Mat imgROI_color = frame(roi);
-        Mat imgROI;
-        cvtColor(imgROI_color,imgROI,CV_RGB2GRAY);
+        Mat imgROI_grey;
+        cvtColor(imgROI_color,imgROI_grey,CV_RGB2GRAY);
         //Mat ROI_gray;
         //Mat laneMask;
-        //threshold(imgROI,laneMask,150,255,THRESH_BINARY);
-        //bitwise_and(imgROI,laneMask,imgROI);
-        imshow("ROI Image",imgROI);
+        //threshold(imgROI_grey,laneMask,150,255,THRESH_BINARY);
+        //bitwise_and(imgROI_grey,laneMask,imgROI_grey);
+        imshow("ROI Image",imgROI_grey);
 
         Mat PyrDown;
-        pyrDown(imgROI,imgROI);
-        //pyrDown(imgROI,imgROI);
-        //imshow("PyrDown Image",PyrDown);
+        pyrDown(imgROI_grey,imgROI_grey);
 
-        //equalizeHist( imgROI, imgROI );
-        //imshow("equalizeHist",imgROI);
+        //equalizeHist( imgROI_grey, imgROI_grey );
+        //imshow("equalizeHist",imgROI_grey);
 
         Mat contours;
-        Canny(imgROI,contours,100,200);
+        Canny(imgROI_grey,contours,100,200);
         Mat contoursInv;
         threshold(contours,contoursInv,128,255,THRESH_BINARY_INV);
         imshow("Contours",contoursInv);
@@ -132,15 +132,17 @@ int main(int argc, char** argv) {
         ld.setShift(5);
 
         // Detect lines
-        Mat houghP(imgROI.rows*2,imgROI.cols*2,CV_8UC3,cv::Scalar(0,0,0));
+        Mat houghP(imgROI_grey.rows*2,imgROI_grey.cols*2,CV_8UC3,cv::Scalar(0,0,0));
         std::vector<cv::Vec4i> li= ld.findLines(contours);
         ld.drawDetectedLines(houghP,cv::Scalar(0,0,255));
         imshow("Detected Lines with HoughP",houghP);
 
-        //set drawing line's thickness and display on the real-time frame
+        // et drawing line's thickness and display on the real-time frame
         ld.setThick(5);
         cv::addWeighted(imgROI_color,0.7,houghP,1.0,0.,imgROI_color);
         imshow(window_name, frame);
+
+    /*********************************** car detection ***********************************************/
         
     }
     return 0;
