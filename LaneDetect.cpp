@@ -148,9 +148,8 @@ int main(int argc, char** argv) {
         
         CarFinder cf;
 
-        cf.setImage(imgROI_grey);
+        cf.setImage(imgROI_grey_down);
         cf.preProcess();
-        Mat preProcess = cf.getImage();
         imshow("preProcess",cf.getImage());
 
     }
