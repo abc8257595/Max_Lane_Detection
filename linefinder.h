@@ -176,58 +176,6 @@ class LineFinder {
 		  }
 	  }
 
-	  // Eliminates lines that do not have an orientation equals to
-	  // the ones specified in the input matrix of orientations
-	  // At least the given percentage of pixels on the line must 
-	  // be within plus or minus delta of the corresponding orientation
-	  std::vector<cv::Vec4i> removeLinesOfInconsistentOrientations(
-		  const cv::Mat &orientations, double percentage, double delta) {
-
-			  std::vector<cv::Vec4i>::iterator it= lines.begin();
-	
-			  // check all lines
-			  while (it!=lines.end()) {
-
-				  // end points
-				  int x1= (*it)[0];
-				  int y1= (*it)[1];
-				  int x2= (*it)[2];
-				  int y2= (*it)[3];
-		   
-				  // line orientation + 90o to get the parallel line
-				  double ori1= atan2(static_cast<double>(y1-y2),static_cast<double>(x1-x2))+PI/2;
-				  if (ori1>PI) ori1= ori1-2*PI;
-
-				  double ori2= atan2(static_cast<double>(y2-y1),static_cast<double>(x2-x1))+PI/2;
-				  if (ori2>PI) ori2= ori2-2*PI;
-	
-				  // for all points on the line
-				  cv::LineIterator lit(orientations,cv::Point(x1,y1),cv::Point(x2,y2));
-				  int i,count=0;
-				  for(i = 0, count=0; i < lit.count; i++, ++lit) { 
-		
-					  float ori= *(reinterpret_cast<float *>(*lit));
-
-					  // is line orientation similar to gradient orientation ?
-					  if (std::min(fabs(ori-ori1),fabs(ori-ori2))<delta)
-						  count++;
-		
-				  }
-
-				  double consistency= count/static_cast<double>(i);
-
-				  // set to zero lines of inconsistent orientation
-				  if (consistency < percentage) {
- 
-					  (*it)[0]=(*it)[1]=(*it)[2]=(*it)[3]=0;
-
-				  }
-
-				  ++it;
-			  }
-
-			  return lines;
-	  }
 };
 
 

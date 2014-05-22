@@ -61,7 +61,7 @@ class CarFinder{
 			return 0;
 		}
 
-		// 功能： 白线检测
+		// 功能： 白线检测 
 		//	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
 		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
 		// float whitePointsRate(const IplImage* roi_sobel,const int row,const int cb,const int ce){

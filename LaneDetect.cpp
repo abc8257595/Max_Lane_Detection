@@ -1,19 +1,6 @@
 /*------------------------------------------------------------------------------------------*\
-	Add up number on lines that are found within a threshold of a given rho,theta and 
-	use that to determine a score.  Only lines with a good enough score are kept. 
 
-	Calculation for the distance of the car from the center.  This should also determine
-	if the road in turning.  We might not want to be in the center of the road for a turn. 
-	
-	Several other parameters can be played with: min vote on houghp, line distance and gap.  Some
-	type of feed back loop might be good to self tune these parameters. 
 
-	We are still finding the Road, i.e. both left and right lanes.  we Need to set it up to find the
-	yellow divider line in the middle. 
-
-	Added filter on theta angle to reduce horizontal and vertical lines. 
-
-	Added image ROI to reduce false lines from things like trees/powerlines
 \*------------------------------------------------------------------------------------------*/
 
 #include <highgui/highgui.hpp>
@@ -73,16 +60,13 @@ int main(int argc, char** argv) {
     cout << "Frame Size = " << dWidth << "x" << dHeight << endl;
     cout << "FPS :" << dFps << endl;
 
-    Size frameSize(static_cast<int>(dWidth), static_cast<int>(dHeight));
-    //initialize the VideoWriter object 
-    //VideoWriter oVideoWriter("LaneDetection.avi", CV_FOURCC('P','I','M','1'), 20, frameSize, true); 
+    Size frameSize(static_cast<int>(dWidth), static_cast<int>(dHeight)); 
 
     // BIG While !!
     while(1){
         capture >> frame;
         if (frame.empty())
             break;
-        //imshow(window_name, frame);
         //delay N millis, usually long enough to display and capture input
         char key = (char)waitKey(1); 
         switch (key) {
@@ -107,10 +91,6 @@ int main(int argc, char** argv) {
         Mat imgROI_color = frame(roi);
         Mat imgROI_grey;
         cvtColor(imgROI_color,imgROI_grey,CV_RGB2GRAY);
-        //Mat ROI_gray;  //注释这段原想做个白色掩码区  但效果不好
-        //Mat laneMask;
-        //threshold(imgROI_grey,laneMask,150,255,THRESH_BINARY);
-        //bitwise_and(imgROI_grey,laneMask,imgROI_grey);
         imshow("ROI Image",imgROI_grey);
 
         //缩小图像以减少计算量
@@ -118,29 +98,25 @@ int main(int argc, char** argv) {
         pyrDown(imgROI_grey,imgROI_grey_down);
 
         //本意是想增加对比度，更好地显示出白线、黄线，效果并不理想
-        for(int r=0;r < imgROI_grey_down.rows;r++){
-            uchar *data = imgROI_grey_down.ptr<uchar>(r);
-            for(int c=0;c < imgROI_grey_down.cols;c++)
-                    data[c] = saturate_cast<uchar>(data[c] * data[c] / 100);
-        }
+        // for(int r=0;r < imgROI_grey_down.rows;r++){
+        //     uchar *data = imgROI_grey_down.ptr<uchar>(r);
+        //     for(int c=0;c < imgROI_grey_down.cols;c++)
+        //             data[c] = saturate_cast<uchar>(data[c] * data[c] / 100);
+        // }
         //imshow("bringt",imgROI_grey_down);
 
-        //腐蚀以细化车道线，想通过这个方法更好地拟合出车道线
-        Mat erosion_dst;
-        uchar erosion_size = 1 ;
-        Mat element = getStructuringElement( MORPH_ELLIPSE,
-                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
-                                       Point( erosion_size, erosion_size ) );
-        erode( imgROI_grey_down, erosion_dst, element , Point(-1,-1) , 2 );
-        imshow("erosion",erosion_dst);
+        //腐蚀以细化车道线，想通过这个方法更好地拟合出车道线 在缩小的图里容易直接把线腐蚀没，最后居然是原来的最好！
+        // Mat erosion_dst;
+        // uchar erosion_size = 1 ;
+        // Mat element = getStructuringElement( MORPH_CROSS,
+        //                                Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+        //                                Point( erosion_size, erosion_size ) );
+        // erode( imgROI_grey_down, erosion_dst, element , Point(-1,-1) , 1 );
+        // imshow("erosion",erosion_dst);
 
-        //直方图均衡化方法不可取
-        //equalizeHist( imgROI_grey, imgROI_grey );
-        //imshow("equalizeHist",imgROI_grey);
-
-        //Canny算法检出边缘，但100，200的阀值怎么取才合理是个问题
+        //Canny算法检出边缘，但100，200的阀值怎么取才合理是个问题 
         Mat contours;
-        Canny(erosion_dst,contours,100,200);
+        Canny(imgROI_grey_down,contours,100,200);
         Mat contoursInv;
         threshold(contours,contoursInv,128,255,THRESH_BINARY_INV);
         imshow("Contours",contoursInv);
