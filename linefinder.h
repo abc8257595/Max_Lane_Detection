@@ -116,13 +116,12 @@ class LineFinder {
 
 			it1 = filter_lines.begin();
 			while (it1 != filter_lines.end()) {
-
 				double k1 = getK(it1);
 
 				it2 = it1 + 1;
 				while (it2 != filter_lines.end()){
 					double k2 = getK(it2);
-					//除去斜率相近的邻线
+					//除去斜率相近的邻线  应相差多少才合适呢?
 					if(k1*k2 >0 && fabs(k1-k2) < 1 ){
 						//取最上的一条线，不要让其不断跳变
 						if((*it2)[0] < (*it1)[0]){

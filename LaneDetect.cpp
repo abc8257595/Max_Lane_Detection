@@ -107,20 +107,40 @@ int main(int argc, char** argv) {
         Mat imgROI_color = frame(roi);
         Mat imgROI_grey;
         cvtColor(imgROI_color,imgROI_grey,CV_RGB2GRAY);
-        //Mat ROI_gray;
+        //Mat ROI_gray;  //注释这段原想做个白色掩码区  但效果不好
         //Mat laneMask;
         //threshold(imgROI_grey,laneMask,150,255,THRESH_BINARY);
         //bitwise_and(imgROI_grey,laneMask,imgROI_grey);
         imshow("ROI Image",imgROI_grey);
 
+        //缩小图像以减少计算量
         Mat imgROI_grey_down;
         pyrDown(imgROI_grey,imgROI_grey_down);
 
+        //本意是想增加对比度，更好地显示出白线、黄线，效果并不理想
+        for(int r=0;r < imgROI_grey_down.rows;r++){
+            uchar *data = imgROI_grey_down.ptr<uchar>(r);
+            for(int c=0;c < imgROI_grey_down.cols;c++)
+                    data[c] = saturate_cast<uchar>(data[c] * data[c] / 100);
+        }
+        //imshow("bringt",imgROI_grey_down);
+
+        //腐蚀以细化车道线，想通过这个方法更好地拟合出车道线
+        Mat erosion_dst;
+        uchar erosion_size = 1 ;
+        Mat element = getStructuringElement( MORPH_ELLIPSE,
+                                       Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+                                       Point( erosion_size, erosion_size ) );
+        erode( imgROI_grey_down, erosion_dst, element , Point(-1,-1) , 2 );
+        imshow("erosion",erosion_dst);
+
+        //直方图均衡化方法不可取
         //equalizeHist( imgROI_grey, imgROI_grey );
         //imshow("equalizeHist",imgROI_grey);
 
+        //Canny算法检出边缘，但100，200的阀值怎么取才合理是个问题
         Mat contours;
-        Canny(imgROI_grey_down,contours,100,200);
+        Canny(erosion_dst,contours,100,200);
         Mat contoursInv;
         threshold(contours,contoursInv,128,255,THRESH_BINARY_INV);
         imshow("Contours",contoursInv);
@@ -131,10 +151,10 @@ int main(int argc, char** argv) {
         // Set probabilistic Hough parameters , set drawing line's thickness
         ld.setLineLengthAndGap(0.4*contours.rows,0.1*contours.rows);
         ld.setMinVote(20);
-        ld.setShift(5);
-        ld.setThick(5);
+        ld.setShift(0);
+        ld.setThick(3);
 
-        // Detect lines
+        // Detect lines 检测直线，并显示
         Mat houghP(imgROI_grey_down.rows*2,imgROI_grey_down.cols*2,CV_8UC3,cv::Scalar(0,0,0));
         std::vector<cv::Vec4i> li= ld.findLines(contours);
         ld.drawDetectedLines(houghP,cv::Scalar(0,0,255));

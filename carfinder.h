@@ -53,14 +53,50 @@ class CarFinder{
 		}
 
 		// 功能： 对roi进行sobel变换，检测边缘后保存至roi_sobel
-		int sobel()
-		{
+		int sobel(){
 			Mat temp(image.size(),CV_16S,1);
 			Sobel(image,temp,CV_16S,0,1,3);
 			convertScaleAbs(temp,temp);
 			threshold(temp,image,0,255,THRESH_OTSU);
 			return 0;
 		}
+
+		// 功能： 白线检测
+		//	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
+		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
+		// float whitePointsRate(const IplImage* roi_sobel,const int row,const int cb,const int ce){
+		// 	uchar* ptr = (unsigned char*)roi_sobel->imageData+row*roi_sobel->widthStep;
+		// 	int cbegin;
+		// 	for(int c=cb;c<ce;c++)
+		// 	{
+		// 		if(ptr[c]>250)
+		// 		{
+		// 			cbegin = c;
+		// 			break;
+		// 		}
+		// 	}
+
+		// 	if(cbegin<0)
+		// 	{
+		// 		return 0;
+		// 	}
+
+		// 	int cnt = 0;
+		// 	int gap = 5;
+		// 	float rate;
+		// 	for(int c=cbegin;c<ce;c++)
+		// 	{
+		// 		if(ptr[c]>250)
+		// 		{
+		// 			cnt++;
+		// 			gap = 5;
+		// 		}
+		// 		else if(cnt>0 && gap>0)
+		// 			gap--;
+		// 	}
+		// 	rate = cnt/(float)(ce-cb);
+		// 	return rate;
+		// }
 
 	public:
 
@@ -74,6 +110,7 @@ class CarFinder{
 
 		Mat getImage(){ return image;}
 
+		//预处理函数：含两次阈值分割，腐蚀，形态学运算
 		void preProcess(){
 			max_threshold(shadowBound(image),255);
 			max_threshold(shadowBound2(image),255);
