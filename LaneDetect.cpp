@@ -97,23 +97,6 @@ int main(int argc, char** argv) {
         Mat imgROI_grey_down;
         pyrDown(imgROI_grey,imgROI_grey_down);
 
-        //本意是想增加对比度，更好地显示出白线、黄线，效果并不理想
-        // for(int r=0;r < imgROI_grey_down.rows;r++){
-        //     uchar *data = imgROI_grey_down.ptr<uchar>(r);
-        //     for(int c=0;c < imgROI_grey_down.cols;c++)
-        //             data[c] = saturate_cast<uchar>(data[c] * data[c] / 100);
-        // }
-        //imshow("bringt",imgROI_grey_down);
-
-        //腐蚀以细化车道线，想通过这个方法更好地拟合出车道线 在缩小的图里容易直接把线腐蚀没，最后居然是原来的最好！
-        // Mat erosion_dst;
-        // uchar erosion_size = 1 ;
-        // Mat element = getStructuringElement( MORPH_CROSS,
-        //                                Size( 2*erosion_size + 1, 2*erosion_size+1 ),
-        //                                Point( erosion_size, erosion_size ) );
-        // erode( imgROI_grey_down, erosion_dst, element , Point(-1,-1) , 1 );
-        // imshow("erosion",erosion_dst);
-
         //Canny算法检出边缘，但100，200的阀值怎么取才合理是个问题 
         Mat contours;
         Canny(imgROI_grey_down,contours,100,200);
@@ -124,7 +107,8 @@ int main(int argc, char** argv) {
         // Create LineFinder instance
         LineFinder ld;
 
-        // Set probabilistic Hough parameters , set drawing line's thickness
+        // Set ld Image, Set probabilistic Hough parameters , set drawing line's thickness
+        ld.setImg(contours);
         ld.setLineLengthAndGap(0.4*contours.rows,0.1*contours.rows);
         ld.setMinVote(20);
         ld.setShift(0);
@@ -135,6 +119,9 @@ int main(int argc, char** argv) {
         std::vector<cv::Vec4i> li= ld.findLines(contours);
         ld.drawDetectedLines(houghP,cv::Scalar(0,0,255));
         imshow("Detected Lines with HoughP",houghP);
+
+        //显示默认虚线
+        ld.dashLine_init(frame);    
 
         // Display on the real-time frame
         cv::addWeighted(imgROI_color,0.7,houghP,1.0,0.,imgROI_color);
