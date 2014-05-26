@@ -13,6 +13,20 @@ class CarFinder{
 
 		Mat morph_structure;
 
+		struct vehicle{
+			int r;          // row 第几行
+			int vb;			// vb  起始列
+			int ve;			// ve  终止列
+		};
+
+		struct vehicleBox{
+			bool valid;
+			CvPoint bmin;
+			CvPoint bmax;
+			unsigned int width;
+			unsigned int height;
+		};
+
 		//	遍历整幅image图像，对大于threshold的图像点，将max_value赋给图像，否则保持图像原值
 		int max_threshold(double threshold,uchar max_value){
 			for(int r=0;r < image.rows;r++){
@@ -61,43 +75,6 @@ class CarFinder{
 			return 0;
 		}
 
-		// 功能： 白线检测 
-		//	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
-		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
-		// float whitePointsRate(const IplImage* roi_sobel,const int row,const int cb,const int ce){
-		// 	uchar* ptr = (unsigned char*)roi_sobel->imageData+row*roi_sobel->widthStep;
-		// 	int cbegin;
-		// 	for(int c=cb;c<ce;c++)
-		// 	{
-		// 		if(ptr[c]>250)
-		// 		{
-		// 			cbegin = c;
-		// 			break;
-		// 		}
-		// 	}
-
-		// 	if(cbegin<0)
-		// 	{
-		// 		return 0;
-		// 	}
-
-		// 	int cnt = 0;
-		// 	int gap = 5;
-		// 	float rate;
-		// 	for(int c=cbegin;c<ce;c++)
-		// 	{
-		// 		if(ptr[c]>250)
-		// 		{
-		// 			cnt++;
-		// 			gap = 5;
-		// 		}
-		// 		else if(cnt>0 && gap>0)
-		// 			gap--;
-		// 	}
-		// 	rate = cnt/(float)(ce-cb);
-		// 	return rate;
-		// }
-
 	public:
 
 		CarFinder() : erode_structrue( getStructuringElement(MORPH_RECT,Size(10,1),Point(0,0)) ),
@@ -119,6 +96,106 @@ class CarFinder{
 			morphologyEx(image,image,MORPH_CLOSE,morph_structure);
 		}
 
+		// 功能： 白线检测  从第row行开始，检测cb列－ce列的白点率
+		// 	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
+		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
+		// double whitePointsRate( int row,int cb,int ce){
+		// 	Mat img = image.clone();
+		// 	uchar *data = img.ptr<uchar>(row);
+		// 	int cbegin = 0;
+		// 	for(int c=cb;c<ce;c++){
+		// 		//std::cout<<ptr[c]<<std::endl;
+		// 		uchar tmp = data[c];
+		// 		if(tmp > 250){
+		// 			cbegin = c;
+		// 			break;
+		// 		}
+		// 	}
+
+		// 	if(cbegin == 0){
+		// 		return -1;
+		// 	}
+
+		// 	int cnt = 5;
+		// 	int gap = 5;
+		// 	double rate;
+		// 	for(int c=cbegin;c<ce || gap < 0;c++){
+		// 		uchar tmp = data[c];
+		// 		if(tmp > 250){
+		// 			cnt++;
+		// 			gap = 5;
+		// 		}
+		// 		else if(cnt>0 && gap>0)
+		// 			gap--;
+		// 	}
+		// 	rate = cnt/((ce-cb)*0.0001);
+		// 	return rate;
+		// }
+
+		// double whitePointsRate(){
+		// 	std::cout<<image.cols<<"X"<<image.rows<<" type:"<<image.type()<<std::endl;
+		// 	Mat img = image.clone();
+		// 	for(int j=0;j<21;j++){
+		// 		uchar *data = img.ptr<uchar>(j);
+		// 		for(int i=20;i<img.cols;i++){
+		// 			// if(data[i].val > 250)
+		// 			// 	std::cout<<data[i].val;
+		// 			//Scalar intensity = img.at<uchar>(y, x);
+		// 			uchar tmp = data[i];
+		// 			//std::cout<<tmp;
+		// 			//printf("%d\n",tmp );
+		// 			if(tmp > 250)
+		// 				data[i] = 127;
+
+		// 		}
+		// 	}
+		// 	imshow("test",img);
+
+		// }
+
+		// 功能： 白线检测  从第row行开始，检测cb列－ce列的白点率
+		// 	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
+		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
+		double whitePointsRate(int row,int cb,int ce){
+			uchar *data = image.ptr<uchar>(row);
+			int cbegin;
+			for(int c=cb;c<ce;c++){
+				uchar tmp = data[c];
+				if(tmp > 250){
+					cbegin = c;
+					//printf("%d\n",cbegin);
+					break;
+					//return cbegin;
+				}
+			}
+			//printf("%d\n",cbegin);
+
+			int cnt = 5;
+			int gap = 5;
+			double rate;
+			for(int c=cbegin;c<ce;c++){
+				uchar tmp = data[c];
+				if(tmp > 250){
+					cnt++;
+					gap = 5;
+				}
+				else if(cnt>0 && gap>0)
+					gap--;
+			}
+			rate = cnt/((ce-cb)+0.0001);
+			//printf("%f\n",rate);
+			return rate;
+
+		}
+
+		void vehiclesLocation(){
+			for(int r= 20 ;r<(image.rows-30);r++){
+				double rate = whitePointsRate(r,20,image.cols-20);
+				if(rate <= 1){
+					printf("%f\n",rate);
+				}
+			}
+		}
 
 
 

@@ -14,6 +14,8 @@ class LineFinder {
 	  // of the detected lines
 	  std::vector<cv::Vec4i> lines;
 
+	  std::vector<cv::Vec4d> frame;
+
 	  // accumulator resolution parameters
 	  double deltaRho;
 	  double deltaTheta;
@@ -174,21 +176,47 @@ class LineFinder {
 			return lines;
 	  }
 
-	 //  void frameDifference(){
-	 //  	std::vector<cv::Vec4f> v;
-	 //    std::vector<cv::Vec4i>::iterator it = v.begin();
+	  // void frameDifference(){
+	  // 	std::vector<cv::Vec4d> Currentframe;
+	  //   std::vector<cv::Vec4d>::iterator it_frame = Currentframe.begin();
 
-  // 		std::vector<cv::Vec4i>::iterator it_line = lines.begin();
+  	// 	std::vector<cv::Vec4i>::iterator it_line = lines.begin();
 
+  	// 	Currentframe.push_back({0.1,0,0,0});
+  	// 	(*it_frame)[0] = 150.2;
+  	// 	(*it_frame)[1] = 150.2;
+  	// 	(*it_frame)[2] = 150.2;
+  	// 	(*it_frame)[3] = 150.2;
+
+  		// for(int i=0;i<lines.size();i++){
+  		//   double k = getK(it_line);
+		  // double t = getTheta(k);
+		  // (*it_frame)[i] = t; 
+		  // ++it_line;
+  		// }
   // 		while (it_line!=lines.end()) {	
 		//   double k = getK(it_line);
+		//   double t = getTheta(k);
 		//   int i = 0;
-		//   (*it)[i] = k; 
-
+		//   if()
+		//   (*it_frame)[i] = t; 
+		//   ++i;
 		//   ++it_line;
 		// }
 
-	 //  }
+		// if(frame.size()<5){
+		// 	frame.push_back(*it_frame);
+		// }
+		// else{
+		// 	frame.erase(frame.begin());
+		// 	frame.push_back(*it_frame);
+		// }
+
+		// it_frame = frame.begin();
+		// std::cout<<"Last frame: "<<(*it_frame)[0]<<(*it_frame)[1]<<std::endl;
+
+
+	  // }
 
 	  // Draw the detected lines on an image
 	  void drawDetectedLines(cv::Mat &image, cv::Scalar color=cv::Scalar(0,0,0)) {
@@ -222,6 +250,7 @@ class LineFinder {
 			  }       
 			  ++it2;	
 		  }
+		  // frameDifference();
 		  std::cout<<"\n";
 	  }
 

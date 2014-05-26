@@ -131,9 +131,20 @@ int main(int argc, char** argv) {
         
         CarFinder cf;
 
-        cf.setImage(imgROI_grey_down);
+        Rect car_ROI(0,frame.rows*0.6,frame.cols,frame.rows*0.39 + 1);
+        Mat car_ROI_image = frame(car_ROI);
+        cvtColor(car_ROI_image,car_ROI_image,CV_RGB2GRAY);
+        Mat car_ROI_image_down;
+        pyrDown(car_ROI_image,car_ROI_image_down);
+
+        cf.setImage(car_ROI_image_down);
         cf.preProcess();
         imshow("preProcess",cf.getImage());
+
+        cf.vehiclesLocation();
+
+
+
 
     }
     return 0;
