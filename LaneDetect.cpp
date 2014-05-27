@@ -139,10 +139,10 @@ int main(int argc, char** argv) {
 
         cf.setImage(car_ROI_image_down);
         cf.preProcess();
-        imshow("preProcess",cf.getImage());
+        
 
         cf.vehiclesLocation();
-
+        imshow("preProcess",cf.getImage());
 
 
 

@@ -99,63 +99,6 @@ class CarFinder{
 		// 功能： 白线检测  从第row行开始，检测cb列－ce列的白点率
 		// 	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
 		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
-		// double whitePointsRate( int row,int cb,int ce){
-		// 	Mat img = image.clone();
-		// 	uchar *data = img.ptr<uchar>(row);
-		// 	int cbegin = 0;
-		// 	for(int c=cb;c<ce;c++){
-		// 		//std::cout<<ptr[c]<<std::endl;
-		// 		uchar tmp = data[c];
-		// 		if(tmp > 250){
-		// 			cbegin = c;
-		// 			break;
-		// 		}
-		// 	}
-
-		// 	if(cbegin == 0){
-		// 		return -1;
-		// 	}
-
-		// 	int cnt = 5;
-		// 	int gap = 5;
-		// 	double rate;
-		// 	for(int c=cbegin;c<ce || gap < 0;c++){
-		// 		uchar tmp = data[c];
-		// 		if(tmp > 250){
-		// 			cnt++;
-		// 			gap = 5;
-		// 		}
-		// 		else if(cnt>0 && gap>0)
-		// 			gap--;
-		// 	}
-		// 	rate = cnt/((ce-cb)*0.0001);
-		// 	return rate;
-		// }
-
-		// double whitePointsRate(){
-		// 	std::cout<<image.cols<<"X"<<image.rows<<" type:"<<image.type()<<std::endl;
-		// 	Mat img = image.clone();
-		// 	for(int j=0;j<21;j++){
-		// 		uchar *data = img.ptr<uchar>(j);
-		// 		for(int i=20;i<img.cols;i++){
-		// 			// if(data[i].val > 250)
-		// 			// 	std::cout<<data[i].val;
-		// 			//Scalar intensity = img.at<uchar>(y, x);
-		// 			uchar tmp = data[i];
-		// 			//std::cout<<tmp;
-		// 			//printf("%d\n",tmp );
-		// 			if(tmp > 250)
-		// 				data[i] = 127;
-
-		// 		}
-		// 	}
-		// 	imshow("test",img);
-
-		// }
-
-		// 功能： 白线检测  从第row行开始，检测cb列－ce列的白点率
-		// 	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
-		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
 		double whitePointsRate(int row,int cb,int ce){
 			uchar *data = image.ptr<uchar>(row);
 			int cbegin;
@@ -163,38 +106,71 @@ class CarFinder{
 				uchar tmp = data[c];
 				if(tmp > 250){
 					cbegin = c;
-					//printf("%d\n",cbegin);
 					break;
-					//return cbegin;
 				}
 			}
-			//printf("%d\n",cbegin);
 
-			int cnt = 5;
+			if(cbegin==0)
+				return -1;
+			
+			int cnt = 0;
 			int gap = 5;
 			double rate;
 			for(int c=cbegin;c<ce;c++){
 				uchar tmp = data[c];
-				if(tmp > 250){
+				if(tmp == 255){
 					cnt++;
 					gap = 5;
 				}
 				else if(cnt>0 && gap>0)
 					gap--;
 			}
-			rate = cnt/((ce-cb)+0.0001);
-			//printf("%f\n",rate);
+			printf("cnt: %d row:%d c: %d - %d\n",cnt,row,cb,ce);
+			rate = cnt/double(ce-cb);
 			return rate;
-
 		}
 
 		void vehiclesLocation(){
-			for(int r= 20 ;r<(image.rows-30);r++){
-				double rate = whitePointsRate(r,20,image.cols-20);
-				if(rate <= 1){
-					printf("%f\n",rate);
-				}
+			cv::Point p1(0.29 * image.cols, 0.67 * image.rows);
+			cv::Point p2(0.45 * image.cols, 0.077 * image.rows);
+			cv::LineIterator it(image, p1, p2, 8);
+			
+			cv::Point p3(0.71 * image.cols, 0.67 * image.rows);
+			cv::Point p4(0.55 * image.cols, 0.077 * image.rows);
+			cv::LineIterator it2(image, p3, p4, 8);
+			
+
+			int row;
+			int cb;
+			int ce;
+			double max_rate;
+			int max_row;
+			//printf("%d\n",it.count);
+			for(int i = 0; i < it.count; i++, it2++,it++)
+			{
+				(*it)[0] = 255;
+				(*it2)[0] = 255;
+				cb = (it.pos()).x;			
+				ce = (it2.pos()).x;
+				row = (it.pos()).y;
+				//cv::LineIterator it_tmp = it++;
+				// if(row == (it_tmp.pos()).y )
+				// 	continue;
+				
+
+				printf("%d: %d,%d \n",row,cb+2,ce-2);
+
+				//for(int r= 20 ;r<(image.rows-30);r++){
+					double rate = whitePointsRate(row,cb+2,ce-2);
+					if(rate > max_rate){
+						max_rate = rate ;
+						max_row = row;
+						printf("%f\n",max_rate);
+					}
+				//}			
 			}
+			printf("Max: %d %f\n",max_row,max_rate);	
+
 		}
 
 
