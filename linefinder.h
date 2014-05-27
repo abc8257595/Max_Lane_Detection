@@ -235,8 +235,8 @@ class LineFinder {
 			  	cv::Point ptLow(image.cols,(pt2.y-pt1.y)/(pt2.x-pt1.x + 0.0001)*(image.cols - pt1.x) + pt1.y);
 			  	cv::line( image, ptTop, ptLow, color, laneThickness );
 			  	cv::line( image, pt1, pt2, cv::Scalar(0,200,200), laneThickness );
-			  	std::cout<<"k:"<<k<<" angle:"<<getTheta(k);
-				std::cout << "("<< pt1 <<"," << pt2 << ")\n"; 
+			  	//std::cout<<"k:"<<k<<" angle:"<<getTheta(k);
+				//std::cout << "("<< pt1 <<"," << pt2 << ")\n"; 
 			  }
 			  else{
 			  	cv::Point pt2((*it2)[0]*2,(*it2)[1]*2+shift);
@@ -245,8 +245,8 @@ class LineFinder {
 			  	cv::Point ptLow(0,(pt2.y-pt1.y)/(pt1.x-pt2.x + 0.0001)*pt1.x + pt1.y);
 			  	cv::line( image, ptTop, ptLow, color, laneThickness );
 			  	cv::line( image, pt1, pt2, cv::Scalar(200,200,0), laneThickness);
-			  	std::cout<<"k:"<<k<<" angle:"<<getTheta(k);
-				std::cout << "("<< pt1 <<"," << pt2 << ")\n"; 
+			  	//std::cout<<"k:"<<k<<" angle:"<<getTheta(k);
+				//std::cout << "("<< pt1 <<"," << pt2 << ")\n"; 
 			  }       
 			  ++it2;	
 		  }

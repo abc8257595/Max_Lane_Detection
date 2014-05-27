@@ -125,27 +125,31 @@ int main(int argc, char** argv) {
 
         // Display on the real-time frame
         cv::addWeighted(imgROI_color,0.7,houghP,1.0,0.,imgROI_color);
-        //imshow(window_name, frame);
 
     /*********************************** car detection ***********************************************/
         
         CarFinder cf;
-
+        // 设置车辆检测ROI区域，与车道检测区域略有不同，所以重新定义大小
         Rect car_ROI(0,frame.rows*0.6,frame.cols,frame.rows*0.39 + 1);
         Mat car_ROI_color = frame(car_ROI);
+        // 转为灰度图
         Mat car_ROI_grey;
         cvtColor(car_ROI_color,car_ROI_grey,CV_RGB2GRAY);
+        // 金字塔缩小，以减小计算量
         Mat car_ROI_grey_down;
         pyrDown(car_ROI_grey,car_ROI_grey_down);
 
+        // 传入car_ROI_grey_down图像 ,图像预处理
         cf.setImage(car_ROI_grey_down);
         cf.preProcess();
         
+        // 调用函数 检出车辆阴影位置，放在私有变量里
         cf.vehiclesLocation();
-        Mat tmp_img = cf.getImage();
+
+        // 画车框，将坐标放大两倍(因为之前的图像是缩小的)颜色为黄色，粗细为2
         rectangle(car_ROI_color, cf.getPt1()*2, cf.getPt2()*2 , Scalar( 0,255,255 ), 2, 8, 0);
-        //imshow("preProcess",cf.getImage());
-        //imshow("car_ROI",car_ROI_color);
+
+        // 显示车道线，车检测区域虚线，前方车辆框
         imshow(window_name, frame);
 
 
