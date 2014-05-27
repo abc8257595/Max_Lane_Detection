@@ -125,25 +125,28 @@ int main(int argc, char** argv) {
 
         // Display on the real-time frame
         cv::addWeighted(imgROI_color,0.7,houghP,1.0,0.,imgROI_color);
-        imshow(window_name, frame);
+        //imshow(window_name, frame);
 
     /*********************************** car detection ***********************************************/
         
         CarFinder cf;
 
         Rect car_ROI(0,frame.rows*0.6,frame.cols,frame.rows*0.39 + 1);
-        Mat car_ROI_image = frame(car_ROI);
-        cvtColor(car_ROI_image,car_ROI_image,CV_RGB2GRAY);
-        Mat car_ROI_image_down;
-        pyrDown(car_ROI_image,car_ROI_image_down);
+        Mat car_ROI_color = frame(car_ROI);
+        Mat car_ROI_grey;
+        cvtColor(car_ROI_color,car_ROI_grey,CV_RGB2GRAY);
+        Mat car_ROI_grey_down;
+        pyrDown(car_ROI_grey,car_ROI_grey_down);
 
-        cf.setImage(car_ROI_image_down);
+        cf.setImage(car_ROI_grey_down);
         cf.preProcess();
         
-
         cf.vehiclesLocation();
-        imshow("preProcess",cf.getImage());
-
+        Mat tmp_img = cf.getImage();
+        rectangle(car_ROI_color, cf.getPt1()*2, cf.getPt2()*2 , Scalar( 0,255,255 ), 2, 8, 0);
+        //imshow("preProcess",cf.getImage());
+        //imshow("car_ROI",car_ROI_color);
+        imshow(window_name, frame);
 
 
     }

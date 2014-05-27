@@ -13,6 +13,8 @@ class CarFinder{
 
 		Mat morph_structure;
 
+		int max_cend , max_cbegin ,max_row;
+
 		struct vehicle{
 			int r;          // row 第几行
 			int vb;			// vb  起始列
@@ -96,12 +98,12 @@ class CarFinder{
 			morphologyEx(image,image,MORPH_CLOSE,morph_structure);
 		}
 
-		// 功能： 白线检测  从第row行开始，检测cb列－ce列的白点率
+		// 功能：   从第row行开始，检测cb列－ce列的白点率
 		// 	  从cb开始检测，右亮度大于250则标记为cbegin,然后在cbegin
 		//    之后大于250的点，让cnt自加，最后用cnt/(ce-cb)算出白点率	
-		double whitePointsRate(int row,int cb,int ce){
+		double whitePointsRate(int row,int cb,int ce,int &cbegin,int &cend){
 			uchar *data = image.ptr<uchar>(row);
-			int cbegin;
+			//int cbegin;
 			for(int c=cb;c<ce;c++){
 				uchar tmp = data[c];
 				if(tmp > 250){
@@ -114,18 +116,20 @@ class CarFinder{
 				return -1;
 			
 			int cnt = 0;
-			int gap = 5;
+			int gap = 3;
 			double rate;
-			for(int c=cbegin;c<ce;c++){
+			int c ;
+			for(c=cbegin;c<ce && gap > 0;c++){
 				uchar tmp = data[c];
 				if(tmp == 255){
 					cnt++;
-					gap = 5;
+					gap = 3;
 				}
 				else if(cnt>0 && gap>0)
 					gap--;
 			}
-			printf("cnt: %d row:%d c: %d - %d\n",cnt,row,cb,ce);
+			cend = c - 2;
+			printf("cnt: %d row:%d %d c: %d - %d\n",cnt,row,cend,cb,ce);
 			rate = cnt/double(ce-cb);
 			return rate;
 		}
@@ -143,9 +147,12 @@ class CarFinder{
 			int row;
 			int cb;
 			int ce;
+
+			//int max_cbegin;
+			//int max_cend;
 			double max_rate;
-			int max_row;
-			//printf("%d\n",it.count);
+			//int max_row;
+
 			for(int i = 0; i < it.count; i++, it2++,it++)
 			{
 				(*it)[0] = 255;
@@ -158,23 +165,29 @@ class CarFinder{
 				// 	continue;
 				
 
-				printf("%d: %d,%d \n",row,cb+2,ce-2);
-
-				//for(int r= 20 ;r<(image.rows-30);r++){
-					double rate = whitePointsRate(row,cb+2,ce-2);
-					if(rate > max_rate){
-						max_rate = rate ;
-						max_row = row;
-						printf("%f\n",max_rate);
-					}
-				//}			
+				//printf("%d: %d,%d \n",row,cb+2,ce-2);
+				int cbegin = 0;
+				int cend = 0;
+				double rate = whitePointsRate(row,cb+2,ce-2,cbegin,cend);
+				if(rate > max_rate){
+					max_rate = rate ;
+					max_row = row;
+					max_cbegin = cbegin;
+					max_cend = cend;
+					//printf("%f\n",max_rate);
+				}
 			}
-			printf("Max: %d %f\n",max_row,max_rate);	
-
+			printf("Max: %d %d %d %f\n",max_row,max_cbegin,max_cend,max_rate);
+			//printf("cend:%d",max_cend );	
 		}
 
+		cv::Point getPt1(){
+			return Point(max_cbegin - 10 ,max_row + 5 );
+		}
 
-
+		cv::Point getPt2(){
+			return Point(max_cend + 10,max_row - 15);
+		}
 };
 
 #endif
