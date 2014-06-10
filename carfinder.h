@@ -181,7 +181,7 @@ class CarFinder{
 				}
 			}
 			max_rate = max_rate_tmp;
-			printf("Max: %d %d %d %f\n",max_row,max_cbegin,max_cend,max_rate);	
+			//printf("Max: %d %d %d %f\n",max_row,max_cbegin,max_cend,max_rate);	
 		}
 
 		// 取得车框左下方点，可自己调整

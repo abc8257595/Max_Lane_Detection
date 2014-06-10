@@ -168,7 +168,7 @@ class LineFinder {
 			}
 
 			// 显示共检测到几条线
-			std::cout<<"size:"<<filter_lines.size()<<std::endl;
+			//std::cout<<"size:"<<filter_lines.size()<<std::endl;
 
 			lines.clear();
 			lines = filter_lines;
@@ -251,7 +251,7 @@ class LineFinder {
 			  ++it2;	
 		  }
 		  // frameDifference();
-		  std::cout<<"\n";
+		  //std::cout<<"\n";
 	  }
 
 	// 画虚线(p1:起点 p2:终点)

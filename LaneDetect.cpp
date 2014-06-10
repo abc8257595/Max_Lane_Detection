@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
         //缩小图像以减少计算量
         Mat imgROI_grey_down;
         pyrDown(imgROI_grey,imgROI_grey_down);
+        imshow("pyrDown_img",imgROI_grey_down);
 
         //Canny算法检出边缘，但100，200的阀值怎么取才合理是个问题 
         Mat contours;
@@ -142,6 +143,7 @@ int main(int argc, char** argv) {
         // 传入car_ROI_grey_down图像 ,图像预处理
         cf.setImage(car_ROI_grey_down);
         cf.preProcess();
+        imshow("car_shadow",cf.getImage());
         
         // 调用函数 检出车辆阴影位置，放在私有变量里
         cf.vehiclesLocation();
