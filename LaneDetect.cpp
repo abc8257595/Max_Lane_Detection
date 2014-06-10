@@ -62,6 +62,10 @@ int main(int argc, char** argv) {
 
     Size frameSize(static_cast<int>(dWidth), static_cast<int>(dHeight)); 
 
+    // 用avi格式编码输出 86 33 98 244 这串字符对应div3这个格式的编码
+    VideoWriter outputVideo;
+    outputVideo.open("output.avi", 863398244, capture.get(CV_CAP_PROP_FPS), Size(848,480), true);
+
     // BIG While !!
     while(1){
         capture >> frame;
@@ -91,7 +95,8 @@ int main(int argc, char** argv) {
         Mat imgROI_color = frame(roi);
         Mat imgROI_grey;
         cvtColor(imgROI_color,imgROI_grey,CV_RGB2GRAY);
-        imshow("ROI Image",imgROI_grey);
+        imshow("ROI Image",imgROI_color);
+        //std:cout << "imgROI_grey :" << imgROI_grey.cols << "X" << imgROI_grey.rows << endl;
 
         //缩小图像以减少计算量
         Mat imgROI_grey_down;
@@ -125,7 +130,7 @@ int main(int argc, char** argv) {
         ld.dashLine_init(frame);    
 
         // Display on the real-time frame
-        cv::addWeighted(imgROI_color,0.7,houghP,1.0,0.,imgROI_color);
+        cv::addWeighted(imgROI_color,1.0,houghP,1.0,0.,imgROI_color);
 
     /*********************************** car detection ***********************************************/
         
@@ -154,7 +159,8 @@ int main(int argc, char** argv) {
         // 显示车道线，车检测区域虚线，前方车辆框
         imshow(window_name, frame);
 
-
+        // 输出结果
+        outputVideo << frame;
     }
     return 0;
 }
