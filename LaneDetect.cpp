@@ -160,7 +160,10 @@ int main(int argc, char** argv) {
         imshow(window_name, frame);
 
         // 输出结果
-        outputVideo << frame;
+        //outputVideo << frame;
+        sprintf(filename,"filename%.3d.jpg",n++);
+        imwrite(filename,frame);
+        cout << "Saved " << filename << endl;
     }
     return 0;
 }
